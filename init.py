@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 import time
 import json
 import shutil
-
+import os
 
 load_dotenv()
 chrome_options = webdriver.ChromeOptions()
@@ -22,12 +22,11 @@ settings = {
         "version": 2
 }
 prefs = {'printing.print_preview_sticky_settings.appState': json.dumps(settings), 
-           'savefile.default_directory': '/Users/user/Projects/serasa-consulting/consultas'
+           'savefile.default_directory': os.getenv('DONWLOAD_PATH')
         }
 chrome_options.add_experimental_option('prefs', prefs)
 chrome_options.add_argument('--kiosk-printing')
-CHROMEDRIVER_PATH = './chromedriver'
-driver = webdriver.Chrome(chrome_options=chrome_options, executable_path=CHROMEDRIVER_PATH)
+driver = webdriver.Chrome(chrome_options=chrome_options, executable_path=os.getenv('CHROMEDRIVER_PATH'))
 
 driver.get("https://www.serasaexperian.com.br/")
 ## Inital form login
@@ -43,7 +42,8 @@ time.sleep(3)
 driver.refresh()
 WebDriverWait(driver, 50).until(EC.visibility_of_element_located((By.XPATH, '//*[@id="card-5f21f84fcb8be941bb2470e3"]/div[1]/div[2]/button[2]'))).click()
 ## Open XLSX
-wb = load_workbook("cpf.xlsx", data_only=True)
+xlsx_path = os.getenv('XLSX_NAME')
+wb = load_workbook(xlsx_path, data_only=True)
 first_sheet = wb.get_sheet_names()[0]
 worksheet = wb.get_sheet_by_name(first_sheet)
 
@@ -67,7 +67,7 @@ for row in range(2,worksheet.max_row+1):
                 WebDriverWait(driver, 50).until(EC.visibility_of_element_located((By.XPATH, '//*[@id="table-part-societaria"]/tbody/tr[2]/td/a'))).click()
             
             ## Loading final consult
-            time.sleep(3)
+            time.sleep(2)
             debtor = False
             for i in range(4,12):
                 elementPath = '//*[@id="formResultado:tbl"]/table[2]/tbody/tr[{}]/td[4]'.format(i)
@@ -83,10 +83,10 @@ for row in range(2,worksheet.max_row+1):
             print("Consulta finalizada")
 
             driver.execute_script('window.print();')
-            shutil.move('./consultas/Credit Report, credit score and credit check from Serasa Experian.pdf', "./consultas/{}.pdf".format(cpf))
-            wb.save('cpf.xlsx')
+            time.sleep(2)
+            shutil.move('./consultas/{}.pdf'.format(os.getenv("PDF_DEFAULT_NAME")), "./consultas/{}.pdf".format(cpf))
+            wb.save(xlsx_path)
             time.sleep(2)
             WebDriverWait(driver, 50).until(EC.visibility_of_element_located((By.XPATH, '//*[@id="formRes"]/div/a[1]'))).click()
-                
 
 driver.quit()
