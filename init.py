@@ -50,7 +50,8 @@ worksheet = wb.get_sheet_by_name(first_sheet)
 for row in range(2,worksheet.max_row+1):
     for column in "B":
         cell_name = "{}{}".format(column, row)
-        cpf = worksheet[cell_name].value
+        # cpf = worksheet[cell_name].value
+        cpf = '316.153.788-20'
 
         if cpf != None and worksheet["{}{}".format("D", row)].value == None:
             time.sleep(2)
